@@ -91,6 +91,15 @@ export function initManualAuthBridge() {
   const originalGetUser = supabase.auth.getUser.bind(supabase.auth);
   const originalGetSession = supabase.auth.getSession.bind(supabase.auth);
   const originalSignOut = supabase.auth.signOut.bind(supabase.auth);
+  const noopSubscription = { unsubscribe: () => {} };
+
+  supabase.auth.onAuthStateChange = (callback) => {
+    const manual = getManualUser();
+    if (manual) {
+      setTimeout(() => callback("SIGNED_IN", buildManualSession()), 0);
+    }
+    return { data: { subscription: noopSubscription } };
+  };
 
   supabase.auth.getUser = async () => {
     const manual = getManualUser();

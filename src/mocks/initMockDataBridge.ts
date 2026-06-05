@@ -5,16 +5,15 @@ import { mockFrom } from "./mockQueryBuilder";
 
 let initialized = false;
 
+/** Matches Supabase RealtimeChannel enough for app + client internals */
 function createMockChannel() {
-  const channel: {
-    on: () => typeof channel;
-    subscribe: (cb?: (status: string) => void) => typeof channel;
-  } = {
-    on: () => channel,
-    subscribe: (cb?: (status: string) => void) => {
+  const channel = {
+    on: (..._args: unknown[]) => channel,
+    subscribe: (cb?: (status: string, err?: Error) => void) => {
       setTimeout(() => cb?.("SUBSCRIBED"), 0);
       return channel;
     },
+    unsubscribe: async () => "ok" as const,
   };
   return channel;
 }
@@ -50,8 +49,8 @@ export function initMockDataBridge() {
     return originalRpc(fn, params);
   }) as typeof supabase.rpc;
 
-  client.channel = (() => createMockChannel()) as typeof supabase.channel;
-  client.removeChannel = (() => {}) as typeof supabase.removeChannel;
+  client.channel = ((_name?: string) => createMockChannel()) as typeof supabase.channel;
+  client.removeChannel = (async () => ({ error: null })) as typeof supabase.removeChannel;
 
   const storageFrom = supabase.storage.from.bind(supabase.storage);
   supabase.storage.from = ((bucket: string) => ({
