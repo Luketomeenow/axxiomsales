@@ -3,7 +3,7 @@ import { Search, User, Settings, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationSystem } from "@/components/reports/NotificationSystem";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchUserProfile, signOut } from "@/integrations/supabase/auth";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -28,19 +28,14 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
   }, []);
 
   const loadUserProfile = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      setUserProfile(profile || { email: user.email });
+    const profile = await fetchUserProfile();
+    if (profile) {
+      setUserProfile(profile);
     }
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     navigate('/login');
   };
 

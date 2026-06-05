@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { signInWithEmailPassword } from "@/integrations/supabase/auth";
+import { signInWithEmailPassword, isManualAuthEnabled, fetchUserProfile } from "@/integrations/supabase/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, Mail, LogIn, UserPlus, User } from "lucide-react";
 
@@ -54,6 +54,21 @@ export default function Login() {
     try {
       const { user } = await signInWithEmailPassword(email, password);
       
+      // Handle manual auth — full admin access to CRM + DAR
+      if (isManualAuthEnabled()) {
+        const profile = await fetchUserProfile();
+        if (profile) {
+          const userName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+          toast({
+            title: "Welcome Admin!",
+            description: `Signed in as ${userName || profile.email}`,
+          });
+          navigate("/");
+          return;
+        }
+      }
+      
+      // Supabase auth flow
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('role, first_name, last_name')

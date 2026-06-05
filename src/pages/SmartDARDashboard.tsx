@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchUserProfile } from "@/integrations/supabase/auth";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { 
   Clock, 
@@ -278,13 +279,7 @@ export default function SmartDARDashboard() {
 
       setCurrentUserId(user.id);
 
-      // Check if user is admin
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
+      const profile = await fetchUserProfile(user.id);
       const userIsAdmin = profile?.role === 'admin';
       setIsAdmin(userIsAdmin);
 

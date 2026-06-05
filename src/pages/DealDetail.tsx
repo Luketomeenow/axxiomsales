@@ -85,6 +85,19 @@ const stageColors = {
   "closed lost": "destructive"
 } as const;
 
+/** Dark theme tokens — matches Layout / Sidebar */
+const dealUi = {
+  card: "bg-[hsl(0,0%,10%)] border border-[hsl(0,0%,18%)] shadow-lg",
+  cardHeader: "bg-[hsl(0,0%,12%)] border-b border-[hsl(0,0%,18%)]",
+  cardTitle: "text-base font-semibold text-[hsl(40,20%,90%)] flex items-center gap-2",
+  pageHeader: "bg-[hsl(0,0%,10%)] border border-[hsl(0,0%,18%)] rounded-lg p-4 md:p-6",
+  goldBtn:
+    "border-[hsl(0,0%,22%)] bg-[hsl(0,0%,14%)] text-[hsl(40,20%,88%)] hover:bg-[hsl(40,50%,45%)] hover:text-[hsl(0,0%,5%)] hover:border-[hsl(40,50%,50%)]",
+  tabsList: "bg-[hsl(0,0%,14%)] border border-[hsl(0,0%,22%)] p-1 h-auto flex-wrap gap-1",
+  tabTrigger:
+    "text-[hsl(40,10%,55%)] data-[state=active]:bg-[hsl(40,50%,48%)] data-[state=active]:text-[hsl(0,0%,5%)] font-medium",
+};
+
 export default function DealDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -310,6 +323,23 @@ export default function DealDetail() {
   useEffect(() => {
     fetchDealData();
   }, [fetchDealData]);
+
+  // Preload deals for primary contact (View Deals count)
+  useEffect(() => {
+    const loadContactDeals = async () => {
+      if (!primaryContact?.id) {
+        setContactDeals([]);
+        return;
+      }
+      const { data } = await supabase
+        .from("deals")
+        .select("*, companies(name)")
+        .eq("primary_contact_id", primaryContact.id)
+        .order("created_at", { ascending: false });
+      setContactDeals(data || []);
+    };
+    loadContactDeals();
+  }, [primaryContact?.id]);
 
   // Fetch all pipelines for transfer
   useEffect(() => {
@@ -847,7 +877,7 @@ export default function DealDetail() {
     
     return (
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+        <Label className="text-sm font-medium text-[hsl(40,10%,55%)] flex items-center gap-2">
           {icon}
           {label}
         </Label>
@@ -1029,15 +1059,15 @@ export default function DealDetail() {
         ) : (
           <div
             className={`cursor-pointer p-3 rounded-lg border transition-all group ${
-              isEmpty 
-                ? 'bg-muted/30 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/50' 
-                : 'bg-background border-border hover:border-primary hover:shadow-sm'
+              isEmpty
+                ? "bg-[hsl(0,0%,12%)] border-dashed border-[hsl(0,0%,25%)] hover:border-[hsl(40,40%,35%)] hover:bg-[hsl(0,0%,14%)]"
+                : "bg-[hsl(0,0%,14%)] border-[hsl(0,0%,22%)] hover:border-[hsl(40,40%,35%)]"
             }`}
             onClick={() => handleStartEdit(fieldName, currentValue)}
             title="Click to edit"
           >
-            <div className="flex items-center justify-between">
-              <span className={`text-sm font-medium ${isEmpty ? 'text-muted-foreground italic' : 'text-foreground'}`}>
+            <div className="flex items-center justify-between gap-2">
+              <span className={`text-sm font-medium ${isEmpty ? "text-[hsl(40,10%,45%)] italic" : "text-[hsl(40,20%,88%)]"}`}>
                 {type === 'user' ? getUserDisplayName(currentValue) : (currentValue || 'Not set')}
               </span>
               <div className="flex items-center gap-1">
@@ -1054,41 +1084,55 @@ export default function DealDetail() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 via-sky-50 to-primary/5 p-6 rounded-lg border-2 border-sky-100 shadow-md">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
-            size="icon" 
+      <div className={cn("flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", dealUi.pageHeader)}>
+        <div className="flex items-start gap-3 min-w-0">
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => navigate("/deals")}
-            className="hover:scale-105 transition-transform border-2 hover:border-primary hover:bg-primary hover:text-white"
+            className={cn("shrink-0", dealUi.goldBtn)}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-sky-600 bg-clip-text text-transparent flex items-center gap-2">
-              {viewMode === 'contact' && selectedContactId && primaryContact
+          <div className="min-w-0">
+            <h1
+              className="text-xl md:text-2xl font-semibold text-[hsl(40,20%,92%)] truncate"
+              style={{ fontFamily: "Cinzel, serif" }}
+            >
+              {viewMode === "contact" && selectedContactId && primaryContact
                 ? `${primaryContact.first_name} ${primaryContact.last_name}`
                 : deal.name}
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-              <p className="text-muted-foreground font-medium">
-                {viewMode === 'contact' ? 'Contact Information' : (company?.name || 'No company')}
+            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <Building2 className="h-4 w-4 text-[hsl(40,30%,50%)] shrink-0" />
+              <p className="text-sm text-[hsl(40,10%,58%)]">
+                {viewMode === "contact" ? "Contact Information" : company?.name || "No company"}
               </p>
               {pipeline && (
                 <>
-                  <span className="text-muted-foreground">•</span>
-                  <Badge variant="outline" className="font-semibold">
+                  <span className="text-[hsl(40,10%,40%)]">•</span>
+                  <Badge
+                    variant="outline"
+                    className="border-[hsl(40,40%,35%)] text-[hsl(40,50%,65%)] bg-[hsl(40,40%,12%)]"
+                  >
                     {pipeline.name}
                   </Badge>
+                </>
+              )}
+              {deal.amount != null && (
+                <>
+                  <span className="text-[hsl(40,10%,40%)]">•</span>
+                  <span className="text-sm font-medium text-[hsl(40,55%,60%)]">
+                    ${Number(deal.amount).toLocaleString()}
+                  </span>
                 </>
               )}
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {primaryContact?.phone && (
-            <ClickToCall 
+            <ClickToCall
               phoneNumber={primaryContact.phone}
               dealId={id}
               contactId={primaryContact.id}
@@ -1097,15 +1141,15 @@ export default function DealDetail() {
               size="sm"
             />
           )}
-          <Button variant="outline" size="sm" className="hover:scale-105 transition-transform border-2 hover:border-primary hover:bg-primary hover:text-white font-semibold">
+          <Button variant="outline" size="sm" className={dealUi.goldBtn}>
             <Mail className="mr-2 h-4 w-4" />
             Email
           </Button>
-          <Button variant="outline" size="sm" className="hover:scale-105 transition-transform border-2 hover:border-primary hover:bg-primary hover:text-white font-semibold">
+          <Button variant="outline" size="sm" className={dealUi.goldBtn} onClick={() => setActiveTab("overview")}>
             <Calendar className="mr-2 h-4 w-4" />
             Meeting
           </Button>
-          <Button variant="outline" size="sm" className="hover:scale-105 transition-transform border-2 hover:border-primary">
+          <Button variant="outline" size="icon" className={dealUi.goldBtn}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
@@ -1113,76 +1157,84 @@ export default function DealDetail() {
 
       {/* Task Queue Section - Compact Bar */}
       {queuedTasks.filter(t => t.deal_id === id).length > 0 && (
-        <Card className="shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200">
+        <Card className={cn(dealUi.card, "border-[hsl(40,40%,28%)]/40")}>
           <CardContent className="p-3 md:p-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <ListTodo className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                <h3 className="font-semibold text-xs sm:text-sm">Task Queue</h3>
-                <Badge variant="secondary" className="text-xs">
-                  {queuedTasks.filter(t => t.deal_id === id).length} task{queuedTasks.filter(t => t.deal_id === id).length !== 1 ? 's' : ''} for this deal
-                </Badge>
-                <Badge variant="outline" className="text-xs hidden sm:inline-flex">
-                  {queuedTasks.length} total in queue
-                </Badge>
-              </div>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <ListTodo className="h-4 w-4 text-[hsl(40,50%,55%)]" />
+              <h3 className="font-semibold text-sm text-[hsl(40,20%,88%)]">Task Queue</h3>
+              <Badge className="text-xs bg-[hsl(40,50%,45%)] text-[hsl(0,0%,5%)] hover:bg-[hsl(40,55%,50%)]">
+                {queuedTasks.filter(t => t.deal_id === id).length} task
+                {queuedTasks.filter(t => t.deal_id === id).length !== 1 ? "s" : ""} for this deal
+              </Badge>
+              <Badge variant="outline" className="text-xs border-[hsl(0,0%,25%)] text-[hsl(40,10%,55%)] hidden sm:inline-flex">
+                {queuedTasks.length} total in queue
+              </Badge>
             </div>
-            <div className="mt-2 md:mt-3 space-y-2">
+            <div className="space-y-2">
               {queuedTasks.filter(t => t.deal_id === id).map((task, index) => (
-                <div key={task.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white dark:bg-slate-800 rounded-lg border border-blue-100 hover:border-blue-300 transition-colors">
-                  <div className="flex-1 min-w-0 w-full">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">{index + 1}</Badge>
-                      <h4 className="font-medium text-xs sm:text-sm truncate">{task.title}</h4>
+                <div
+                  key={task.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-[hsl(0,0%,14%)] border border-[hsl(0,0%,22%)] hover:border-[hsl(40,40%,35%)] transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs border-[hsl(0,0%,28%)] text-[hsl(40,10%,60%)]">
+                        {index + 1}
+                      </Badge>
+                      <h4 className="font-medium text-sm text-[hsl(40,20%,92%)]">{task.title}</h4>
                     </div>
                     {task.description && (
-                      <p className="text-xs text-muted-foreground mt-1 truncate">{task.description}</p>
+                      <p className="text-xs text-[hsl(40,10%,55%)] mt-1 line-clamp-2">{task.description}</p>
                     )}
-                    <div className="flex flex-wrap items-center gap-2 mt-1 sm:mt-2">
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
                       {task.due_date && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="text-xs text-[hsl(40,10%,55%)] flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {new Date(task.due_date).toLocaleDateString()}
                         </span>
                       )}
-                      <Badge variant={task.priority === 'high' ? 'destructive' : task.priority === 'medium' ? 'default' : 'secondary'} className="text-xs">
+                      <Badge
+                        className={cn(
+                          "text-xs capitalize",
+                          task.priority === "high" && "bg-red-500/20 text-red-400 border-red-500/30",
+                          task.priority === "medium" && "bg-[hsl(40,50%,22%)] text-[hsl(40,60%,70%)] border-[hsl(40,50%,35%)]",
+                          task.priority === "low" && "bg-[hsl(0,0%,20%)] text-[hsl(40,10%,55%)] border-[hsl(0,0%,28%)]"
+                        )}
+                        variant="outline"
+                      >
                         {task.priority}
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0 w-full sm:w-auto">
-                  <Button 
-                    size="sm" 
+                  <div className="flex items-center gap-1.5 w-full sm:w-auto sm:shrink-0">
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => openRescheduleDialog(task)}
-                      title="Reschedule task"
-                      className="h-7 sm:h-8 text-xs flex-1 sm:flex-none"
-                  >
+                      className={cn("h-8 text-xs flex-1 sm:flex-none", dealUi.goldBtn)}
+                    >
                       <CalendarClock className="h-3 w-3 sm:mr-1" />
                       <span className="hidden sm:inline">Reschedule</span>
-                  </Button>
-                    <Button 
-                      size="sm" 
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => handleSkipTask(task)}
-                      title="Skip this task"
-                      className="h-7 sm:h-8 text-xs flex-1 sm:flex-none"
+                      className={cn("h-8 text-xs flex-1 sm:flex-none", dealUi.goldBtn)}
                     >
                       <SkipForward className="h-3 w-3 sm:mr-1" />
                       <span className="hidden sm:inline">Skip</span>
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="default"
+                    <Button
+                      size="sm"
                       onClick={() => handleCompleteTask(task)}
-                      title="Mark as complete"
-                      className="h-7 sm:h-8 text-xs bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
+                      className="h-8 text-xs flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                       <CheckCircle2 className="h-3 w-3 sm:mr-1" />
                       <span className="hidden sm:inline">Complete</span>
                     </Button>
                   </div>
-              </div>
+                </div>
               ))}
             </div>
           </CardContent>
@@ -1199,16 +1251,16 @@ export default function DealDetail() {
               onClose={handleBackToDeal}
                   />
                 ) : (
-            <Card className="shadow-lg border-2 border-sky-100 hover:shadow-glow transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-primary/10 via-sky-50 to-primary/5 border-b-2 border-sky-100">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-bold text-primary flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
+            <Card className={dealUi.card}>
+              <CardHeader className={dealUi.cardHeader}>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className={dealUi.cardTitle}>
+                    <FileText className="h-5 w-5 text-[hsl(40,50%,55%)]" />
                     Deal Information
                   </CardTitle>
-                  <Badge 
-                    variant={deal.stage?.toLowerCase().includes('won') ? 'default' : deal.stage?.toLowerCase().includes('lost') ? 'destructive' : 'secondary'}
-                    className="capitalize font-semibold px-3 py-1"
+                  <Badge
+                    variant={deal.stage?.toLowerCase().includes("won") ? "default" : deal.stage?.toLowerCase().includes("lost") ? "destructive" : "secondary"}
+                    className="capitalize font-medium px-3 py-1 bg-[hsl(40,40%,18%)] text-[hsl(40,55%,65%)] border-[hsl(40,40%,30%)]"
                   >
                     {deal.stage}
                   </Badge>
@@ -1330,7 +1382,7 @@ export default function DealDetail() {
 
                 {/* 20. Last Activity Date (Read Only) */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Label className="text-sm font-medium text-[hsl(40,10%,55%)] flex items-center gap-2">
                     <Clock className="h-4 w-4" />
                     Last Activity Date
                   </Label>
@@ -1366,20 +1418,20 @@ export default function DealDetail() {
         </div>
 
         {/* Center Content - Activities */}
-        <div className="col-span-6 animate-fade-in">
+        <div className="lg:col-span-6 animate-fade-in">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <Card className="shadow-lg border-2 border-sky-100 hover:shadow-glow transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-primary/10 via-sky-50 to-primary/5 border-b-2 border-sky-100">
-                <TabsList className="bg-white shadow-md border-2 border-sky-100 p-1">
-                  <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-white font-semibold transition-all">Meeting</TabsTrigger>
-                  <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-white font-semibold transition-all">Activity</TabsTrigger>
-                  <TabsTrigger value="notes" className="data-[state=active]:bg-primary data-[state=active]:text-white font-semibold transition-all">Notes</TabsTrigger>
-                  <TabsTrigger value="calls" className="data-[state=active]:bg-primary data-[state=active]:text-white font-semibold transition-all">Calls</TabsTrigger>
-                  <TabsTrigger value="tasks" className="data-[state=active]:bg-primary data-[state=active]:text-white font-semibold transition-all">Tasks</TabsTrigger>
-                  <TabsTrigger value="emails" className="data-[state=active]:bg-primary data-[state=active]:text-white font-semibold transition-all">Emails</TabsTrigger>
+            <Card className={dealUi.card}>
+              <CardHeader className={dealUi.cardHeader}>
+                <TabsList className={dealUi.tabsList}>
+                  <TabsTrigger value="overview" className={dealUi.tabTrigger}>Meeting</TabsTrigger>
+                  <TabsTrigger value="activity" className={dealUi.tabTrigger}>Activity</TabsTrigger>
+                  <TabsTrigger value="notes" className={dealUi.tabTrigger}>Notes</TabsTrigger>
+                  <TabsTrigger value="calls" className={dealUi.tabTrigger}>Calls</TabsTrigger>
+                  <TabsTrigger value="tasks" className={dealUi.tabTrigger}>Tasks</TabsTrigger>
+                  <TabsTrigger value="emails" className={dealUi.tabTrigger}>Emails</TabsTrigger>
                 </TabsList>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-4">
                   <TabsContent value="overview" className="space-y-4">
                     <CalScheduler 
                       dealId={id!} 
@@ -1537,11 +1589,11 @@ export default function DealDetail() {
         </div>
 
         {/* Right Sidebar - Associated Entities */}
-        <div className="col-span-3 space-y-4 animate-slide-in-right">
-          <Card className="shadow-lg border-2 border-sky-100 hover:shadow-glow transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-primary/10 via-sky-50 to-primary/5 border-b-2 border-sky-100 flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-bold text-primary flex items-center gap-2">
-                <Users className="h-5 w-5" />
+        <div className="lg:col-span-3 space-y-4 animate-slide-in-right">
+          <Card className={dealUi.card}>
+            <CardHeader className={cn(dealUi.cardHeader, "flex flex-row items-center justify-between gap-2")}>
+              <CardTitle className={dealUi.cardTitle}>
+                <Users className="h-5 w-5 text-[hsl(40,50%,55%)]" />
                 Associated Contacts
               </CardTitle>
               <LinkContactDialog 
@@ -1558,18 +1610,18 @@ export default function DealDetail() {
             <CardContent className="p-4">
               {primaryContact ? (
                 <div className="space-y-3">
-                  <div 
-                    className="flex items-center space-x-3 cursor-pointer hover:bg-primary/5 p-3 rounded-lg transition-all border-2 border-transparent hover:border-primary/20"
+                  <div
+                    className="flex items-center space-x-3 cursor-pointer hover:bg-[hsl(0,0%,14%)] p-3 rounded-lg transition-all border border-transparent hover:border-[hsl(40,40%,30%)]"
                     onClick={() => handleViewContact(primaryContact.id)}
                     title="Click to view contact details"
                   >
-                    <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    <Avatar className="h-10 w-10 ring-2 ring-[hsl(40,40%,25%)]">
+                      <AvatarFallback className="bg-[hsl(40,40%,15%)] text-[hsl(40,55%,65%)] font-semibold">
                         {primaryContact.first_name?.[0]}{primaryContact.last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="font-semibold text-sm text-primary hover:underline flex items-center gap-1">
+                      <p className="font-semibold text-sm text-[hsl(40,20%,90%)] hover:text-[hsl(40,55%,65%)] hover:underline flex items-center gap-1">
                         {primaryContact.first_name} {primaryContact.last_name}
                       </p>
                       <Badge variant="outline" className="text-[10px] mt-1">Primary Contact</Badge>
@@ -1637,10 +1689,10 @@ export default function DealDetail() {
 
           {/* Contact Actions Card - Separate Card for View Deals and Create New Deal */}
           {primaryContact && (
-            <Card className="shadow-lg border-2 border-sky-100 hover:shadow-glow transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-primary/10 via-sky-50 to-primary/5 border-b-2 border-sky-100">
-                <CardTitle className="text-lg font-bold text-primary flex items-center gap-2">
-                  <ListTodo className="h-5 w-5" />
+            <Card className={dealUi.card}>
+              <CardHeader className={dealUi.cardHeader}>
+                <CardTitle className={dealUi.cardTitle}>
+                  <ListTodo className="h-5 w-5 text-[hsl(40,50%,55%)]" />
                   Contact Actions
                 </CardTitle>
               </CardHeader>
@@ -1648,16 +1700,15 @@ export default function DealDetail() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start border-2 hover:border-primary hover:bg-primary/5 font-semibold transition-all"
+                  className={cn("w-full justify-start", dealUi.goldBtn)}
                   onClick={() => setShowContactDeals(!showContactDeals)}
                 >
                   <Eye className="h-4 w-4 mr-2" />
-                  {showContactDeals ? 'Hide' : 'View'} Deals ({contactDeals.length})
+                  {showContactDeals ? "Hide" : "View"} Deals ({contactDeals.length})
                 </Button>
                 <Button
-                  variant="default"
                   size="sm"
-                  className="w-full justify-start bg-primary hover:bg-primary/90 font-semibold shadow-md hover:shadow-lg transition-all"
+                  className="w-full justify-start bg-[hsl(40,50%,48%)] hover:bg-[hsl(40,55%,55%)] text-[hsl(0,0%,5%)] font-semibold"
                   onClick={() => setCreateDealSheetOpen(true)}
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -1716,10 +1767,10 @@ export default function DealDetail() {
             </Card>
           )}
 
-          <Card className="shadow-lg border-2 border-sky-100 hover:shadow-glow transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-primary/10 via-sky-50 to-primary/5 border-b-2 border-sky-100 flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-bold text-primary flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+          <Card className={dealUi.card}>
+            <CardHeader className={cn(dealUi.cardHeader, "flex flex-row items-center justify-between gap-2")}>
+              <CardTitle className={dealUi.cardTitle}>
+                <Building2 className="h-5 w-5 text-[hsl(40,50%,55%)]" />
                 Associated Companies
               </CardTitle>
               <LinkCompanyDialog 

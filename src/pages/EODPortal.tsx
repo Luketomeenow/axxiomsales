@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, Fragment, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchUserProfile } from "@/integrations/supabase/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2034,14 +2035,8 @@ const [activeTab, setActiveTab] = useState<"clients" | "messages" | "history" | 
       return;
     }
     setUser(authUser);
-    
-    // Fetch user role
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('user_id', authUser.id)
-      .single();
-    
+
+    const profile = await fetchUserProfile(authUser.id);
     setUserRole(profile?.role || null);
     await loadToday(); // 🔥 CRITICAL FIX: Await to ensure tasks load before render
   };
@@ -2051,13 +2046,7 @@ const [activeTab, setActiveTab] = useState<"clients" | "messages" | "history" | 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Check if user is admin
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
+      const profile = await fetchUserProfile(user.id);
       const isAdmin = profile?.role === 'admin';
 
       const clientMap = new Map<string, { name: string; email?: string; timezone?: string }>();
@@ -2874,13 +2863,7 @@ const [activeTab, setActiveTab] = useState<"clients" | "messages" | "history" | 
         return;
       }
 
-      // Check if user is admin
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
+      const profile = await fetchUserProfile(user.id);
       const isAdmin = profile?.role === 'admin';
 
       // Load templates
@@ -3140,13 +3123,7 @@ const [activeTab, setActiveTab] = useState<"clients" | "messages" | "history" | 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 🔒 SECURITY: Check if user is admin
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
+      const profile = await fetchUserProfile(user.id);
       const isAdmin = profile?.role === 'admin';
 
       // Build delete query

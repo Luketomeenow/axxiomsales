@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchUserProfile, isManualAuthEnabled, getManualUser } from "@/integrations/supabase/auth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -19,6 +20,35 @@ export function ProtectedRoute({ children, requireAdmin = false, adminOnly = fal
 
   const checkAuth = async () => {
     try {
+      // Check for manual auth first
+      if (isManualAuthEnabled()) {
+        const manualUser = getManualUser();
+        
+        if (!manualUser) {
+          setIsAuthorized(false);
+          setIsLoggedIn(false);
+          setLoading(false);
+          return;
+        }
+
+        setIsLoggedIn(true);
+
+        if (requireAdmin || adminOnly) {
+          if (adminOnly) {
+            setIsAuthorized(manualUser.role === 'admin');
+          } else if (requireAdmin) {
+            const stafflyHubRoles = ['admin', 'manager', 'rep'];
+            setIsAuthorized(stafflyHubRoles.includes(manualUser.role || ''));
+          }
+        } else {
+          setIsAuthorized(true);
+        }
+        
+        setLoading(false);
+        return;
+      }
+
+      // Supabase auth fallback
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -31,18 +61,11 @@ export function ProtectedRoute({ children, requireAdmin = false, adminOnly = fal
       setIsLoggedIn(true);
 
       if (requireAdmin || adminOnly) {
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
+        const profile = await fetchUserProfile(user.id);
 
         if (adminOnly) {
-          // Only actual admins can access
           setIsAuthorized(profile?.role === 'admin');
         } else if (requireAdmin) {
-          // StafflyHub access (admin, manager, rep)
-          // Only Operators (eod_user) should be blocked
           const stafflyHubRoles = ['admin', 'manager', 'rep'];
           setIsAuthorized(stafflyHubRoles.includes(profile?.role || ''));
         }

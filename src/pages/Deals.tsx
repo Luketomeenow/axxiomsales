@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, TrendingUp, DollarSign, Target, Activity, Search, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchUserProfile } from "@/integrations/supabase/auth";
 import { DealForm } from "@/components/deals/DealForm";
 import { DragDropPipeline } from "@/components/pipeline/DragDropPipeline";
 import { DealListView } from "@/components/pipeline/DealListView";
@@ -132,13 +133,7 @@ export default function Deals() {
       
       if (user) {
         setCurrentUserId(user.id);
-        
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-        
+        const profile = await fetchUserProfile(user.id);
         setUserRole(profile?.role || null);
         console.log('✅ User role loaded:', profile?.role);
       }

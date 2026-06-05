@@ -17,6 +17,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchUserProfile } from "@/integrations/supabase/auth";
 
 // White Sands CRM Logo Component
 const WhiteSandsLogo = ({ className }: { className?: string }) => (
@@ -92,16 +93,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
   }, []);
 
   const checkUserRole = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-      
-      setUserRole(profile?.role || null);
-    }
+    const profile = await fetchUserProfile();
+    setUserRole(profile?.role || null);
     setLoading(false);
   };
 
