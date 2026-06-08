@@ -4876,7 +4876,7 @@ const [activeTab, setActiveTab] = useState<"clients" | "messages" | "history" | 
               }}
             >
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              Switch to StafflyHub
+              Switch to Sales Hub
             </Button>
           </div>
         )}

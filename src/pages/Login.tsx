@@ -8,35 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { signInWithEmailPassword, isManualAuthEnabled, fetchUserProfile } from "@/integrations/supabase/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, Mail, LogIn, UserPlus, User } from "lucide-react";
-
-// White Sands CRM Logo Component
-const WhiteSandsLogo = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 100 100" 
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <linearGradient id="loginGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#D4AF5C' }} />
-        <stop offset="50%" style={{ stopColor: '#C9A962' }} />
-        <stop offset="100%" style={{ stopColor: '#B8964F' }} />
-      </linearGradient>
-      <linearGradient id="loginDarkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#1a1a1a' }} />
-        <stop offset="100%" style={{ stopColor: '#0d0d0d' }} />
-      </linearGradient>
-    </defs>
-    <circle cx="50" cy="50" r="48" fill="url(#loginDarkGradient)" stroke="url(#loginGoldGradient)" strokeWidth="2"/>
-    <circle cx="50" cy="50" r="42" fill="none" stroke="url(#loginGoldGradient)" strokeWidth="0.5" opacity="0.5"/>
-    <g>
-      <path d="M15 58 Q30 48, 50 55 Q70 62, 85 52" fill="none" stroke="url(#loginGoldGradient)" strokeWidth="2.5" strokeLinecap="round" opacity="0.5"/>
-      <path d="M15 52 Q35 42, 55 50 Q75 58, 85 48" fill="none" stroke="url(#loginGoldGradient)" strokeWidth="3" strokeLinecap="round" opacity="0.7"/>
-      <path d="M15 46 Q40 36, 60 45 Q80 54, 85 44" fill="none" stroke="url(#loginGoldGradient)" strokeWidth="3.5" strokeLinecap="round"/>
-    </g>
-    <text x="50" y="75" fontFamily="Cinzel, Georgia, serif" fontSize="14" fontWeight="600" fill="url(#loginGoldGradient)" textAnchor="middle" letterSpacing="4">WS</text>
-  </svg>
-);
+import { AxxiomLogo, AxxiomBrandName } from "@/components/branding/AxxiomLogo";
 
 export default function Login() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -172,29 +144,15 @@ export default function Login() {
         <div className="absolute bottom-1/4 left-1/4 w-1/3 h-px bg-gradient-to-r from-transparent via-[hsl(40,50%,40%)] to-transparent opacity-25" />
         
         {/* Subtle glow orbs */}
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[hsl(40,50%,30%)] rounded-full filter blur-[150px] opacity-10" />
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[hsl(210,80%,40%)] rounded-full filter blur-[150px] opacity-10" />
         <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-[hsl(40,50%,25%)] rounded-full filter blur-[120px] opacity-10" />
       </div>
 
       <div className="w-full max-w-md relative z-10 p-6">
         {/* Logo and Branding */}
         <div className="text-center mb-10 animate-fade-in">
-          <WhiteSandsLogo className="w-24 h-24 mx-auto mb-6 animate-gold-glow" />
-          <h1 
-            className="text-3xl font-semibold tracking-wider mb-2"
-            style={{ 
-              fontFamily: 'Cinzel, serif',
-              background: 'linear-gradient(135deg, #D4AF5C, #C9A962, #B8964F)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            WHITE SANDS
-          </h1>
-          <p className="text-[hsl(40,50%,55%)] text-sm tracking-[0.4em] uppercase font-medium">
-            CRM
-          </p>
+          <AxxiomLogo className="w-24 h-24 mx-auto mb-6 animate-gold-glow" idPrefix="login" />
+          <AxxiomBrandName size="lg" className="items-center" />
         </div>
 
         {/* Login/Signup Card */}
@@ -356,10 +314,10 @@ export default function Login() {
         {/* Additional Info */}
         <div className="mt-8 text-center animate-fade-in">
           <p className="text-[10px] text-[hsl(40,10%,35%)] tracking-widest uppercase">
-            Premium CRM Solution
+            Sales Intelligence Platform
           </p>
           <p className="text-xs text-[hsl(40,10%,30%)] mt-2">
-            © 2025 White Sands. All rights reserved.
+            © 2026 Axxiom Sales Hub. All rights reserved.
           </p>
         </div>
       </div>

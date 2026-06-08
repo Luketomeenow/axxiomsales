@@ -18,35 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchUserProfile } from "@/integrations/supabase/auth";
-
-// White Sands CRM Logo Component
-const WhiteSandsLogo = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 100 100" 
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <linearGradient id="sidebarGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#D4AF5C' }} />
-        <stop offset="50%" style={{ stopColor: '#C9A962' }} />
-        <stop offset="100%" style={{ stopColor: '#B8964F' }} />
-      </linearGradient>
-      <linearGradient id="sidebarDarkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style={{ stopColor: '#1a1a1a' }} />
-        <stop offset="100%" style={{ stopColor: '#0d0d0d' }} />
-      </linearGradient>
-    </defs>
-    <circle cx="50" cy="50" r="48" fill="url(#sidebarDarkGradient)" stroke="url(#sidebarGoldGradient)" strokeWidth="2"/>
-    <circle cx="50" cy="50" r="42" fill="none" stroke="url(#sidebarGoldGradient)" strokeWidth="0.5" opacity="0.5"/>
-    <g>
-      <path d="M15 58 Q30 48, 50 55 Q70 62, 85 52" fill="none" stroke="url(#sidebarGoldGradient)" strokeWidth="2.5" strokeLinecap="round" opacity="0.5"/>
-      <path d="M15 52 Q35 42, 55 50 Q75 58, 85 48" fill="none" stroke="url(#sidebarGoldGradient)" strokeWidth="3" strokeLinecap="round" opacity="0.7"/>
-      <path d="M15 46 Q40 36, 60 45 Q80 54, 85 44" fill="none" stroke="url(#sidebarGoldGradient)" strokeWidth="3.5" strokeLinecap="round"/>
-    </g>
-    <text x="50" y="75" fontFamily="Cinzel, Georgia, serif" fontSize="14" fontWeight="600" fill="url(#sidebarGoldGradient)" textAnchor="middle" letterSpacing="4">WS</text>
-  </svg>
-);
+import { AxxiomLogo, AxxiomBrandName } from "@/components/branding/AxxiomLogo";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -160,15 +132,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
       {/* Logo Header */}
       <div className="flex h-20 items-center justify-between px-4 border-b border-[hsl(0,0%,18%)] bg-gradient-to-b from-[hsl(0,0%,12%)] to-[hsl(0,0%,8%)]">
         <div className="flex items-center space-x-3">
-          <WhiteSandsLogo className="h-10 w-10" />
-          <div className="flex flex-col">
-            <span className="text-lg font-semibold tracking-wide text-gold-gradient" style={{ fontFamily: 'Cinzel, serif' }}>
-              WHITE SANDS
-            </span>
-            <span className="text-[10px] tracking-[0.3em] text-[hsl(40,50%,55%)] uppercase">
-              CRM
-            </span>
-          </div>
+          <AxxiomLogo className="h-10 w-10 shrink-0" idPrefix="sidebar" />
+          <AxxiomBrandName size="sm" />
         </div>
         <Button
           variant="ghost"
@@ -232,7 +197,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
       <div className="px-4 py-4 border-t border-[hsl(0,0%,18%)]">
         <div className="text-center">
           <p className="text-[10px] text-[hsl(40,10%,40%)] tracking-wider uppercase">
-            Premium CRM Solution
+            Axxiom Sales Hub
           </p>
         </div>
       </div>

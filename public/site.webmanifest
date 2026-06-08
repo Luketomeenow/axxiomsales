@@ -1,0 +1,17 @@
+{
+  "name": "Axxiom Sales Hub",
+  "short_name": "Axxiom",
+  "description": "Sales pipeline, deals, and team performance in one hub.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
